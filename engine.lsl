@@ -1,11 +1,11 @@
-string CMD_ADD = "add"; // Add waypoint.
-string CMD_CLEAR = "clear"; // Clear all waypoints.
-string CMD_DEBUG = "debug"; // Turn debugging information on/off.
-string CMD_LIST = "list"; // List waypoints.
-string CMD_RESUME = "resume"; // Resume travel to target.
-string CMD_SPEED = "speed"; // Set maximum speed.
-string CMD_START = "start"; // Start playing through waypoints.
-string CMD_STOP = "stop"; // Stop movement.
+string ENGINE_ADD = "add"; // Add waypoint.
+string ENGINE_CLEAR = "clear"; // Clear all waypoints.
+string ENGINE_DEBUG = "debug"; // Turn debugging information on/off.
+string ENGINE_LIST = "list"; // List waypoints.
+string ENGINE_RESUME = "resume"; // Resume travel to target.
+string ENGINE_SPEED = "speed"; // Set maximum speed.
+string ENGINE_START = "start"; // Start playing through waypoints.
+string ENGINE_STOP = "stop"; // Stop movement.
 //
 integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
 
@@ -60,28 +60,28 @@ handle_message(string message)
 	{
 		//say("Single-word command: " + command);
 		// Single-word commands
-		if(command == CMD_CLEAR) clear_waypoints();
-		else if(command == CMD_LIST) list_waypoints();
-		else if(command == CMD_RESUME) set_waypoint(target);
-		else if(command == CMD_START) start();
-		else if(command == CMD_STOP) stop();
+		if(command == ENGINE_CLEAR) clear_waypoints();
+		else if(command == ENGINE_LIST) list_waypoints();
+		else if(command == ENGINE_RESUME) set_waypoint(target);
+		else if(command == ENGINE_START) start();
+		else if(command == ENGINE_STOP) stop();
 		return;
 	}
 
 	// Two-part commands
 	string param1 = llList2String(parsed, 1);
 
-	if(command == CMD_ADD)
+	if(command == ENGINE_ADD)
 	{
 		vector target = (vector)param1;
 		add_waypoint(target);
 	}
-	else if(command == CMD_DEBUG)
+	else if(command == ENGINE_DEBUG)
 	{
 		is_debugging = !!(integer)param1;
 		llOwnerSay("Debugging set to: " + (string)is_debugging);
 	}
-	else if(command == CMD_SPEED)
+	else if(command == ENGINE_SPEED)
 	{
 		float new_speed = (float)param1;
 		if(new_speed > 0)

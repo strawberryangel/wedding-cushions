@@ -13,6 +13,14 @@ string CMD_STOP = "stop"; // Stop movement.
 string CMD_WHERE = "where"; // Where are we?
 //
 integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
+string ENGINE_ADD = "add"; // Add waypoint.
+string ENGINE_CLEAR = "clear"; // Clear all waypoints.
+string ENGINE_DEBUG = "debug"; // Turn debugging information on/off.
+string ENGINE_LIST = "list"; // List waypoints.
+string ENGINE_RESUME = "resume"; // Resume travel to target.
+string ENGINE_SPEED = "speed"; // Set maximum speed.
+string ENGINE_START = "start"; // Start playing through waypoints.
+string ENGINE_STOP = "stop"; // Stop movement.
 //
 integer LISTEN_CHANNEL = 0;
 integer RELATIVE_WAYPOINTS = FALSE; // If true, waypoints are relative positions.
@@ -23,23 +31,23 @@ cmd_add(vector target)
 {
 	// State: Any
 	// Result: Unchanged.
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_ADD + "|" + (string)target, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_STOP, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_ADD + "|" + (string)target, NULL_KEY);
 }
 
 cmd_clear()
 {
 	// State: Any
 	// Result  = Unchanged.
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_CLEAR, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_STOP, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_CLEAR, NULL_KEY);
 }
 
 cmd_debug(integer on_off)
 {
 	// State: Any
 	// Result: Unchanged.
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_DEBUG + "|" + (string)on_off, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_DEBUG + "|" + (string)on_off, NULL_KEY);
 }
 
 cmd_go(vector target)
@@ -69,7 +77,7 @@ cmd_home()
 
 cmd_list()
 {
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_LIST, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_LIST, NULL_KEY);
 }
 
 cmd_move(vector offset)
@@ -79,22 +87,22 @@ cmd_move(vector offset)
 
 cmd_resume()
 {
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESUME, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_RESUME, NULL_KEY);
 }
 
 cmd_speed(float speed)
 {
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_SPEED + "|" + (string)speed, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_SPEED + "|" + (string)speed, NULL_KEY);
 }
 
 cmd_start()
 {
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_START, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_START, NULL_KEY);
 }
 
 cmd_stop()
 {
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_STOP, NULL_KEY);
 }
 
 cmd_where()
