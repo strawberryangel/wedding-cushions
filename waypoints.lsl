@@ -8,6 +8,7 @@ string CMD_LIST = "list"; // List waypoints.
 string CMD_MOVE = "move"; // Move relative to current position.
 string CMD_RESET = "reset"; // Reset waypoint index.
 string CMD_RESUME = "resume"; // Resume travel to target.
+string CMD_SPEED = "speed"; // Set maximum speed.
 string CMD_START = "start"; // Start playing through waypoints.
 string CMD_STOP = "stop"; // Stop movement.
 string CMD_WHERE = "where"; // Where are we?
@@ -88,6 +89,11 @@ cmd_resume()
 	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESUME, NULL_KEY);
 }
 
+cmd_speed(float speed)
+{
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_SPEED + "|" + (string)speed, NULL_KEY);
+}
+
 cmd_start()
 {
 	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_START, NULL_KEY);
@@ -136,6 +142,15 @@ handle_message(string message)
 	if(command == CMD_DEBUG) cmd_debug((integer)param1);
 	if(command == CMD_GO) cmd_go((vector)param1);
 	if(command == CMD_MOVE) cmd_move((vector)param1);
+	if(command == CMD_SPEED) cmd_speed((float)param1);
+}
+
+init()
+{
+	llSay(0, "Initializing engine UI.");
+	llSay(0, "Listening on channel " + (string)LISTEN_CHANNEL);
+	llListen(LISTEN_CHANNEL, "", llGetOwner(), "");
+	set_object_type();
 }
 
 list parse_command(string message)
@@ -166,19 +181,22 @@ set_object_type()
 
 default
 {
+	changed(integer change)
+	{
+		init();
+	}
 	listen(integer channel, string name, key id, string message)
 	{
 		handle_message(message);
 	}
 	on_rez(integer start_param)
 	{
-		set_object_type();
+		init();
 		cmd_here();
 	}
 	state_entry()
 	{
-		llListen(LISTEN_CHANNEL, "", llGetOwner(), "");
-		set_object_type();
+		init();
 	}
 	touch_end(integer total_number)
 	{
