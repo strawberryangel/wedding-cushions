@@ -6,7 +6,6 @@ string CMD_HERE = "here"; // Set home to current position.
 string CMD_HOME = "home"; // Go to home position
 string CMD_LIST = "list"; // List waypoints.
 string CMD_MOVE = "move"; // Move relative to current position.
-string CMD_RESET = "reset"; // Reset waypoint index.
 string CMD_RESUME = "resume"; // Resume travel to target.
 string CMD_SPEED = "speed"; // Set maximum speed.
 string CMD_START = "start"; // Start playing through waypoints.
@@ -79,11 +78,6 @@ cmd_move(vector offset)
 	cmd_go(llGetPos() + offset);
 }
 
-cmd_reset()
-{
-	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESET, NULL_KEY);
-}
-
 cmd_resume()
 {
 	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESUME, NULL_KEY);
@@ -126,7 +120,6 @@ handle_message(string message)
 		if(command == CMD_HERE) cmd_here();
 		if(command == CMD_HOME) cmd_home();
 		if(command == CMD_LIST) cmd_list();
-		if(command == CMD_RESET) cmd_reset();
 		if(command == CMD_RESUME) cmd_resume();
 		if(command == CMD_START) cmd_start();
 		if(command == CMD_STOP) cmd_stop();
