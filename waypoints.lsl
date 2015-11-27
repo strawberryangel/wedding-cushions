@@ -1,67 +1,55 @@
 string CMD_ADD = "add"; // Add waypoint.
 string CMD_CLEAR = "clear"; // Clear all waypoints.
+string CMD_DEBUG = "debug"; // Turn debugging information on/off.
 string CMD_GO = "go"; // Go to an absolute position.
 string CMD_HERE = "here"; // Set home to current position.
 string CMD_HOME = "home"; // Go to home position
 string CMD_LIST = "list"; // List waypoints.
 string CMD_MOVE = "move"; // Move relative to current position.
 string CMD_RESET = "reset"; // Reset waypoint index.
+string CMD_RESUME = "resume"; // Resume travel to target.
 string CMD_START = "start"; // Start playing through waypoints.
 string CMD_STOP = "stop"; // Stop movement.
 string CMD_WHERE = "where"; // Where are we?
 //
+integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
+//
 integer LISTEN_CHANNEL = 0;
 integer RELATIVE_WAYPOINTS = FALSE; // If true, waypoints are relative positions.
 
-vector target;
-float target_range = 0.25;
-float min_time = 0.11111111111111111111111111111111; // 5/45;
-float max_speed = 5.0; // m/S
-integer is_running = FALSE;
 vector home = ZERO_VECTOR;
-integer waypoint_index = 0;
-list waypoints = [];
-
-integer check_waypoint()
-{
-	// Is the current position within a certain distance of the target? 
-	vector current_location = llGetPos();
-	vector direction = target - current_location;
-	float distance = llVecMag(direction);
-	return distance <= target_range;
-}
-
-vector get_vector(string message, string command)
-{
-	// Get the second parameter of message assuming it contains command. 
-	return (vector)llGetSubString(message, llStringLength(command), -1);
-}
 
 cmd_add(vector target)
 {
 	// State: Any
 	// Result: Unchanged.
-	waypoints = waypoints + target;
-	say("Added waypoint " + (string)target);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_ADD + "|" + (string)target, NULL_KEY);
 }
 
 cmd_clear()
 {
 	// State: Any
-	// Result  = Stopped
-	cmd_stop();
-	waypoints = [];
-	waypoint_index = 0;
-	say("Cleared waypoints.");
+	// Result  = Unchanged.
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_CLEAR, NULL_KEY);
+}
+
+cmd_debug(integer on_off)
+{
+	// State: Any
+	// Result: Unchanged.
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_DEBUG + "|" + (string)on_off, NULL_KEY);
 }
 
 cmd_go(vector target)
 {
-	// State: Running
-	// Result: running
-	if(is_running) return;
-	
-	set_waypoint(target);
+	// State: Any
+	// Result: Running.
+	cmd_stop();
+	cmd_clear();
+	cmd_add(target);
+	cmd_start();
 	say("Going to " + (string)target);
 }
 
@@ -74,17 +62,15 @@ cmd_here()
 
 cmd_home()
 {
-	cmd_stop();
-	cmd_go(home);
+	if(home == ZERO_VECTOR)
+		say("Home is not set.");
+	else
+		cmd_go(home);
 }
 
 cmd_list()
 {
-	say("Waypoints:");
-	integer length = llGetListLength(waypoints);
-	integer i;
-	for(i=0; i < length; i++)
-		say((string)llList2Vector(waypoints, i));
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_LIST, NULL_KEY);
 }
 
 cmd_move(vector offset)
@@ -94,21 +80,22 @@ cmd_move(vector offset)
 
 cmd_reset()
 {
-	waypoint_index = 0;
-	say("Waypoint index reset.");
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESET, NULL_KEY);
+}
+
+cmd_resume()
+{
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_RESUME, NULL_KEY);
 }
 
 cmd_start()
 {
-	is_running = TRUE;
-	next_waypoint();
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_START, NULL_KEY);
 }
 
 cmd_stop()
 {
-	is_running = FALSE;
-	llSetKeyframedMotion([], []);
-	say("Stopped.");
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, CMD_STOP, NULL_KEY);
 }
 
 cmd_where()
@@ -134,6 +121,7 @@ handle_message(string message)
 		if(command == CMD_HOME) cmd_home();
 		if(command == CMD_LIST) cmd_list();
 		if(command == CMD_RESET) cmd_reset();
+		if(command == CMD_RESUME) cmd_resume();
 		if(command == CMD_START) cmd_start();
 		if(command == CMD_STOP) cmd_stop();
 		if(command == CMD_WHERE) cmd_where();
@@ -141,41 +129,13 @@ handle_message(string message)
 	}
 
 	// Two-part commands
-	vector target = llList2Vector(parsed, 1);
+	string param1 = llList2String(parsed, 1);
 
 	//say("Two-part command: " + command + " " + (string)target);
-	if(command == CMD_ADD) cmd_add(target);
-	if(command == CMD_GO) cmd_go(target);
-	if(command == CMD_MOVE) cmd_move(target);
-}
-
-integer is_command(string message, string command, integer offset)
-{
-	integer length = llStringLength(command);
-	if(offset > 0)
-	{
-		command = llGetSubString(command + "      ", 0, length + offset - 1);
-		length = length + offset;
-	}
-	return llGetSubString(message, 0, length - 1) == command;
-}
-
-next_waypoint()
-{
-	integer count = llGetListLength(waypoints);
-	if(count <= waypoint_index)
-	{
-		is_running = FALSE;
-		waypoint_index = 0;
-		return;
-	}
-
-	vector waypoint = llList2Vector(waypoints, waypoint_index);
-	waypoint_index += 1;
-	if(RELATIVE_WAYPOINTS)
-		set_waypoint(target + waypoint);
-	else
-		set_waypoint(waypoint);
+	if(command == CMD_ADD) cmd_add((vector)param1);
+	if(command == CMD_DEBUG) cmd_debug((integer)param1);
+	if(command == CMD_GO) cmd_go((vector)param1);
+	if(command == CMD_MOVE) cmd_move((vector)param1);
 }
 
 list parse_command(string message)
@@ -188,11 +148,7 @@ list parse_command(string message)
 	if(length == 1) return [command];
 
 	list remainder_list = llDeleteSubList(pieces, 0, 0);
-	string remainder = llDumpList2String(remainder_list, " ");
-	//say("parse comand: " + remainder);
-	vector target = (vector)remainder;
-	//say("parse command: " + (string)target);
-	return [command, target];
+	return [command] + remainder_list;
 }
 
 say(string message)
@@ -208,31 +164,11 @@ set_object_type()
 		PRIM_PHYSICS_SHAPE_TYPE, PRIM_PHYSICS_SHAPE_NONE]);
 }
 
-set_waypoint(vector value)
-{
-	target = value;
-	vector current_location = llGetPos();
-	vector direction = target - current_location;
-	float distance = llVecMag(direction);
-	float time = llRound(45 * distance / max_speed)/45;
-	if(time < min_time) time = min_time;
-	llSetKeyframedMotion([direction, ZERO_ROTATION, time], []);
-}
-
 default
 {
 	listen(integer channel, string name, key id, string message)
 	{
 		handle_message(message);
-	}
-	moving_end()
-	{
-		if(!is_running) return;
-
-		if(check_waypoint())
-			next_waypoint();
-		else
-			waypoint_index = 0;
 	}
 	on_rez(integer start_param)
 	{
@@ -247,6 +183,7 @@ default
 	touch_end(integer total_number)
 	{
 		set_object_type();
-		next_waypoint();
+		cmd_stop();
 	}
 }
+
