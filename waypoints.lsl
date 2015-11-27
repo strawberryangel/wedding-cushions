@@ -156,7 +156,7 @@ list parse_command(string message)
 	if(length == 1) return [command];
 
 	list remainder_list = llDeleteSubList(pieces, 0, 0);
-	return [command] + remainder_list;
+	return [command] + llDumpList2String(remainder_list, " ");
 }
 
 say(string message)
