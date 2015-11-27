@@ -50,7 +50,6 @@ cmd_go(vector target)
 	cmd_clear();
 	cmd_add(target);
 	cmd_start();
-	say("Going to " + (string)target);
 }
 
 cmd_here()
@@ -130,7 +129,7 @@ handle_message(string message)
 	// Two-part commands
 	string param1 = llList2String(parsed, 1);
 
-	//say("Two-part command: " + command + " " + (string)target);
+	// say("Two-part command: " + command + " " + (string)param1);
 	if(command == CMD_ADD) cmd_add((vector)param1);
 	if(command == CMD_DEBUG) cmd_debug((integer)param1);
 	if(command == CMD_GO) cmd_go((vector)param1);
@@ -140,8 +139,8 @@ handle_message(string message)
 
 init()
 {
-	llSay(0, "Initializing engine UI.");
-	llSay(0, "Listening on channel " + (string)LISTEN_CHANNEL);
+	llOwnerSay("Initializing engine UI.");
+	llOwnerSay("Listening on channel " + (string)LISTEN_CHANNEL);
 	llListen(LISTEN_CHANNEL, "", llGetOwner(), "");
 	set_object_type();
 }
