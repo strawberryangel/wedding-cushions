@@ -1,4 +1,4 @@
-// melethril nîn
+// melethril nï¿½n
 string CMD_STAGING = "eska"; // Staging area "home".
 string CMD_CEREMONY = "gwend"; // Ceremony "bond"
 //
@@ -15,12 +15,14 @@ string ENGINE_STOP = "stop"; // Stop movement.
 integer LISTEN_CHANNEL = 0;
 
 // Staging
-vector staging = <135,145,23>;
+vector staging = <128,128,23>;
 
 // Basic arrangement.
-vector center = <128,128,24>;
+vector center = <128,128,30>;
 float radius = 3.0;
 float count = 7;
+// Platform
+float platform_radius = 5;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Engine Functions
@@ -52,6 +54,11 @@ go(vector target)
 	start();
 }
 
+speed(float speed)
+{
+	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_SPEED + "|" + (string)speed, NULL_KEY);
+}
+
 start()
 {
 	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_START, NULL_KEY);
@@ -76,13 +83,30 @@ cmd_staging()
 cmd_ceremony()
 {
 	float number = (float)llGetObjectName();
-	float arc = TWO_PI / count;
+	float angle = number * TWO_PI / count;
 
-	vector offset = <radius, 0, 0>; // Vector along the X axis.
-	rotation rotate = llEuler2Rot(<0.0, 0.0, number * arc>);
+	vector offset;
+	rotation rotate;
+	// Waypoint 1
+	offset = <10 - radius, 0, 0>; // Vector along the X axis.
+	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
+	add(center + offset + <0, 0, -3>);
 
-	go(center + offset);
+	// Waypoint 2
+	add(center + offset + <0, 0, 3>);
+
+	// Waypoint 3 
+	offset = <radius, 0, 0>; // Vector along the X axis.
+	rotate = llEuler2Rot(<0.0, 0.0, angle>);
+	offset = offset * rotate;
+	add(center + offset + <0, 0, 3>);
+
+	// Waypoint 4
+	add(center + offset);
+
+	speed(0.5);
+	start();
 }
 
 handle_message(string message)
