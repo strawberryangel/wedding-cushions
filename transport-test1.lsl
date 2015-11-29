@@ -94,20 +94,24 @@ cmd_ceremony()
 	offset = <2*platform_radius - radius, 0, 0>; // Vector along the X axis.
 	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
+	speed(2.5);
 	add(center + offset + <0, 0, -platform_below>);
 
 	// Waypoint 2
 	float height = platform_above*(1 - radius/platform_radius);
 	vector above = <0, 0, height>;
+	speed(1);
 	add(center + offset + above);
 
 	// Waypoint 3
 	offset = <radius, 0, 0>; // Vector along the X axis.
 	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
+	speed(1);
 	add(center + offset + above);
 
 	// Waypoint 4
+	speed(0.5);
 	add(center + offset);
 
 	start();
