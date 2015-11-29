@@ -1,7 +1,7 @@
 // melethril n�n
 string CMD_STAGING = "eska"; // Staging area "home".
 string CMD_CEREMONY = "gwendad"; // Ceremony gwend "bond" + sad "place, spot"
-string CMD_SAY = "pedo"; // Imperative  "ped-" say. 
+string CMD_SAY = "pedo"; // Imperative  "ped-" say.
 //
 integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
 string ENGINE_ADD = "add"; // Add waypoint.
@@ -20,8 +20,9 @@ vector staging = <192,64,3100>;
 
 // Basic arrangement.
 vector center = <176,80,3111>;
-float radius = 1.0;
-float count = 7;
+integer number;
+float radius;
+float count;
 // Platform
 float platform_radius = 5.0;
 float platform_below = 2;
@@ -72,7 +73,6 @@ stop()
 	llMessageLinked(LINK_SET, ENGINE_CHANNEL, ENGINE_STOP, NULL_KEY);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Supported commands.
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ cmd_staging()
 
 cmd_ceremony()
 {
-	float number = (float)llGetObjectName();
+	get_object();
 	float angle = number * TWO_PI / count;
 
 	vector offset;
@@ -98,25 +98,70 @@ cmd_ceremony()
 
 	// Waypoint 2
 	float height = platform_above*(1 - radius/platform_radius);
-	vector platform_above = <0, 0, height>;
-	add(center + offset + platform_above);
+	vector above = <0, 0, height>;
+	add(center + offset + above);
 
-	// Waypoint 3 
+	// Waypoint 3
 	offset = <radius, 0, 0>; // Vector along the X axis.
 	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
-	add(center + offset + platform_above);
+	add(center + offset + above);
 
 	// Waypoint 4
 	add(center + offset);
 
-	speed(5);
 	start();
 }
 
 cmd_say()
 {
 	llOwnerSay("sidh");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Support functions
+///////////////////////////////////////////////////////////////////////////////
+
+get_object()
+{
+	list pieces = llParseString2List(llGetObjectName(), ["\\"], []);
+	number = (integer)llList2String(pieces, 0);
+	integer row_number = (integer)llList2String(pieces, 1);
+	if(row_number == 1)
+	{
+		radius = 1;
+		count = 7;
+	}
+	else if(row_number == 2)
+	{
+		radius = 2;
+		count = 9;
+	}
+	else if(row_number == 3)
+	{
+		radius = 3;
+		count = 11;
+	}
+	else if(row_number == 4)
+	{
+		radius = 4;
+		count = 13;
+	}
+	else if(row_number == 5)
+	{
+		radius = 5;
+		count = 15;
+	}
+	else if(row_number == 6)
+	{
+		radius = 6;
+		count = 17;
+	}
+	else
+	{
+		radius = 7;
+		count = 19;
+	}
 }
 
 handle_message(string message)
