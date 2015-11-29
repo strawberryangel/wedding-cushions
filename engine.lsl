@@ -8,14 +8,15 @@ string ENGINE_START = "start"; // Start playing through waypoints.
 string ENGINE_STOP = "stop"; // Stop movement.
 //
 integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
+float DEFAULT_SPEED  = 5.0; // m/S
 
 integer is_debugging = FALSE;
 vector target = ZERO_VECTOR; // Current destination.
 float target_range = 0.25; // How close do we need to get to a waypoint to call ourselves "arrived?"
 float min_time = 0.11111111111111111111111111111111; // 5/45;
-float max_speed = 5.0; // m/S
+float max_speed = DEFAULT_SPEED;
 integer is_running = FALSE;
-list waypoints = [];
+list waypoints = []; // Strided list. (destination, speed)
 
 add_waypoint(vector target)
 {
@@ -23,11 +24,14 @@ add_waypoint(vector target)
 	// Result: Unchanged.
 	if(target != ZERO_VECTOR)
 	{
-		waypoints = waypoints + target;
-		say("Added waypoint " + (string)target);
+		float speed = max_speed;
+		if(speed == 0) speed = DEFAULT_SPEED;
+
+		waypoints = waypoints + [target, speed];
+		say("Added waypoint " + (string)target + " at speed " + (string)speed + "m/S");
 	}
 	else
-		say("Refusing to add <0, 0, 0> as a waypoint.");
+		say("Refusing to add zero vector as a waypoint.");
 }
 
 integer check_waypoint()
@@ -83,26 +87,26 @@ handle_message(string message)
 	}
 	else if(command == ENGINE_SPEED)
 	{
-		float new_speed = (float)param1;
-		if(new_speed > 0)
+		float speed = (float)param1;
+		if(speed > 0)
 		{
-			max_speed = new_speed;
-			say("Setting speed to: " + (string)new_speed);
+			max_speed = speed;
+			say("Setting speed to: " + (string)speed);
 
 		}
 		else
-			say("Refusing to set speed to: " + (string)new_speed);
+			say("Refusing to set speed to: " + (string)speed);
 	}
 }
 
 list_waypoints()
 {
 	integer length = llGetListLength(waypoints);
-	say("Waypoints: " + (string)length);
+	say("Waypoints: " + (string)(length/2));
 
 	integer i;
-	for(i=0; i < length; i++)
-		say((string)llList2Vector(waypoints, i));
+	for(i=0; i < length; i += 2)
+		say((string)llList2Vector(waypoints, i) + " at " +  (string)llList2Float(waypoints, i+1) + "m/S");
 }
 
 next_waypoint()
@@ -116,7 +120,9 @@ next_waypoint()
 	}
 
 	vector waypoint = llList2Vector(waypoints, 0);
-	waypoints = llDeleteSubList(waypoints, 0, 0);
+	float speed = llList2Float(waypoints, 1);
+	waypoints = llDeleteSubList(waypoints, 0, 1); // Remove strided items from head of queue.
+	max_speed = speed;
 	set_waypoint(waypoint);
 }
 
