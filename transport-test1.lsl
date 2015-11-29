@@ -1,6 +1,7 @@
 // melethril n�n
 string CMD_STAGING = "eska"; // Staging area "home".
-string CMD_CEREMONY = "gwend"; // Ceremony "bond"
+string CMD_CEREMONY = "gwendad"; // Ceremony gwend "bond" + sad "place, spot"
+string CMD_SAY = "pedo"; // Imperative  "ped-" say. 
 //
 integer ENGINE_CHANNEL = 51489145; // Link message ID to listen for.
 string ENGINE_ADD = "add"; // Add waypoint.
@@ -15,14 +16,16 @@ string ENGINE_STOP = "stop"; // Stop movement.
 integer LISTEN_CHANNEL = 0;
 
 // Staging
-vector staging = <128,128,23>;
+vector staging = <192,64,3100>;
 
 // Basic arrangement.
-vector center = <128,128,30>;
-float radius = 3.0;
+vector center = <176,80,3111>;
+float radius = 1.0;
 float count = 7;
 // Platform
-float platform_radius = 5;
+float platform_radius = 5.0;
+float platform_below = 2;
+float platform_above = 5;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Engine Functions
@@ -88,25 +91,32 @@ cmd_ceremony()
 	vector offset;
 	rotation rotate;
 	// Waypoint 1
-	offset = <10 - radius, 0, 0>; // Vector along the X axis.
+	offset = <2*platform_radius - radius, 0, 0>; // Vector along the X axis.
 	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
-	add(center + offset + <0, 0, -3>);
+	add(center + offset + <0, 0, -platform_below>);
 
 	// Waypoint 2
-	add(center + offset + <0, 0, 3>);
+	float height = platform_above*(1 - radius/platform_radius);
+	vector platform_above = <0, 0, height>;
+	add(center + offset + platform_above);
 
 	// Waypoint 3 
 	offset = <radius, 0, 0>; // Vector along the X axis.
 	rotate = llEuler2Rot(<0.0, 0.0, angle>);
 	offset = offset * rotate;
-	add(center + offset + <0, 0, 3>);
+	add(center + offset + platform_above);
 
 	// Waypoint 4
 	add(center + offset);
 
-	speed(0.5);
+	speed(5);
 	start();
+}
+
+cmd_say()
+{
+	llOwnerSay("sidh");
 }
 
 handle_message(string message)
@@ -121,6 +131,7 @@ handle_message(string message)
 	// Single-word commands
 	if(command == CMD_STAGING) cmd_staging();
 	if(command == CMD_CEREMONY) cmd_ceremony();
+	if(command == CMD_SAY) cmd_say();
 }
 
 init()
