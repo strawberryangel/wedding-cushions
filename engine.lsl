@@ -131,14 +131,14 @@ say(string message)
 	if(is_debugging) llOwnerSay(message);
 }
 
-integer set_waypoint(vector value)
+set_waypoint(vector value)
 {
 	target = value;
 	if(target == ZERO_VECTOR)
 	{
 		say("Cannot set waypoint to <0, 0, 0>. Stopping.");
 		stop();
-		return FALSE;
+		return;
 	}
 
 	vector current_location = llGetPos();
@@ -151,7 +151,7 @@ integer set_waypoint(vector value)
 	say("Waypoint set to " + (string)target + " over the next " + (string)time + "S.");
 
 	is_running = TRUE;
-	return TRUE;
+	return;
 }
 
 start()
