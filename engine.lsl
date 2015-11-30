@@ -51,6 +51,22 @@ clear_waypoints()
 	say("Cleared waypoints.");
 }
 
+rotation face()
+{
+	if(target == ZERO_VECTOR) return ZERO_ROTATION;
+
+	vector current = llRot2Euler(llGetRot());
+	float current_angle = current.z;
+	say("Current facing = " + (string)(current_angle * RAD_TO_DEG));
+
+	vector direction = target - llGetPos();
+	float direction_angle = llAtan2(direction.y, direction.x);
+	say("Target facing = " + (string)(direction_angle * RAD_TO_DEG));
+
+	//return llEuler2Rot(<0, 0, direction_angle>);
+	return llEuler2Rot(<0, 0, direction_angle - current_angle>);
+}
+
 handle_message(string message)
 {
 	list parsed = llParseString2List(message, ["|"], []);
@@ -144,9 +160,11 @@ set_waypoint(vector value)
 	vector current_location = llGetPos();
 	vector direction = target - current_location;
 	float distance = llVecMag(direction);
+
+	rotation facing = face();
 	float time = llRound(45 * distance / max_speed)/45; // Round to the nearest 1/45. See llSetKeyframedMotion
 	if(time < min_time) time = min_time;
-	llSetKeyframedMotion([direction, ZERO_ROTATION, time], []);
+	llSetKeyframedMotion([direction, facing, time], []);
 
 	say("Waypoint set to " + (string)target + " over the next " + (string)time + "S.");
 
