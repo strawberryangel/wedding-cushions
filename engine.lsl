@@ -25,7 +25,6 @@ add_waypoint(vector target)
 	if(target != ZERO_VECTOR)
 	{
 		float speed = max_speed;
-		if(speed == 0) speed = DEFAULT_SPEED;
 
 		waypoints = waypoints + [target, speed];
 		say("Added waypoint " + (string)target + " at speed " + (string)speed + "m/S");
@@ -55,7 +54,17 @@ rotation face()
 {
 	if(target == ZERO_VECTOR) return ZERO_ROTATION;
 
-	vector current = llRot2Euler(llGetRot());
+	rotation this = llEuler2Rot(<0, 270 * DEG_TO_RAD, 0>);
+	say("This object's rotation: " + (string)(RAD_TO_DEG * llRot2Euler(this)) + " = " + (string)(this));
+
+	rotation object = llGetRot();
+	say("This object: " + (string)(RAD_TO_DEG * llRot2Euler(object)) + " = " + (string)(object));
+	say("This object * this: " + (string)(RAD_TO_DEG * llRot2Euler(object * this)) + " = " + (string)(object * this));
+	say("This object / this: " + (string)(RAD_TO_DEG * llRot2Euler(object / this)) + " = " + (string)(object / this));
+	say("This this * object: " + (string)(RAD_TO_DEG * llRot2Euler(this * object)) + " = " + (string)(this * object));
+	say("This this / object: " + (string)(RAD_TO_DEG * llRot2Euler(this / object)) + " = " + (string)(this / object));
+	vector current = llRot2Euler(object / this);
+	say("Current: " + (string)(RAD_TO_DEG * current));
 	float current_angle = current.z;
 	say("Current facing = " + (string)(current_angle * RAD_TO_DEG));
 
@@ -64,7 +73,14 @@ rotation face()
 	say("Target facing = " + (string)(direction_angle * RAD_TO_DEG));
 
 	//return llEuler2Rot(<0, 0, direction_angle>);
-	return llEuler2Rot(<0, 0, direction_angle - current_angle>);
+	rotation result = llEuler2Rot(<0, 0, direction_angle - current_angle>);
+	say("This result: " + (string)(RAD_TO_DEG * llRot2Euler(result)) + " = " + (string)(result));
+	say("This result * this: " + (string)(RAD_TO_DEG * llRot2Euler(result * this)) + " = " + (string)(result * this));
+	say("This result / this: " + (string)(RAD_TO_DEG * llRot2Euler(result / this)) + " = " + (string)(result / this));
+	say("This this * result: " + (string)(RAD_TO_DEG * llRot2Euler(this * result)) + " = " + (string)(this * result));
+	say("This this / result: " + (string)(RAD_TO_DEG * llRot2Euler(this / result)) + " = " + (string)(this / result));
+	//result = result * this;
+	return result;
 }
 
 handle_message(string message)
@@ -104,7 +120,7 @@ handle_message(string message)
 	else if(command == ENGINE_SPEED)
 	{
 		float speed = (float)param1;
-		if(speed > 0)
+		if(speed >= 0)
 		{
 			max_speed = speed;
 			say("Setting speed to: " + (string)speed);
@@ -162,6 +178,15 @@ set_waypoint(vector value)
 	float distance = llVecMag(direction);
 
 	rotation facing = face();
+	if(max_speed == 0)
+	{
+		llSetRot(facing);
+		// llSetKeyframedMotion([ZERO_VECTOR, facing, 4.0], []);
+		say("Speed is zero. Skipping motion.");
+		next_waypoint();
+		return;
+	}
+
 	float time = llRound(45 * distance / max_speed)/45; // Round to the nearest 1/45. See llSetKeyframedMotion
 	if(time < min_time) time = min_time;
 	llSetKeyframedMotion([direction, facing, time], []);
